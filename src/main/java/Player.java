@@ -5,8 +5,23 @@ import java.util.stream.Collectors;
 
 class Player {
 
+    private static boolean debug = true;
+
     public static void main(String args[]) {
-        Scanner in = new Scanner(System.in);
+        Scanner in;
+        if (debug) {
+            in = new Scanner("30 1 24 25\n" +
+                    "30 1 25 25\n" +
+                    "5 6\n" +
+                    "37 2 0 0 6 5 7 ------ 0 0 1\n" +
+                    "61 4 0 0 9 10 10 ------ 0 0 0\n" +
+                    "75 6 0 0 5 6 5 B----- 0 0 0\n" +
+                    "96 8 0 0 2 3 2 ---G-- 0 0 0\n" +
+                    "83 10 0 0 0 1 1 -C---- 0 0 0\n" +
+                    "55 12 0 0 2 0 5 ---G-- 0 0 0");
+        } else {
+            in = new Scanner(System.in);
+        }
 
         Gamer myGamer = null;
         Gamer enGamer = null;
@@ -20,9 +35,17 @@ class Player {
                 Gamer g = new Gamer(playerHealth, playerMana, playerDeck, playerRune);
                 myGamer = i == 0 ? g : myGamer;
                 enGamer = i == 1 ? g : enGamer;
+
+                if (debug) {
+                    System.err.println(playerHealth + " " + playerMana + " " + playerDeck + " " + playerRune);
+                }
             }
             int opponentHand = in.nextInt();
             int cardCount = in.nextInt();
+            if (debug) {
+                System.err.println(opponentHand + " " + cardCount);
+            }
+
             List<Card> cards = new ArrayList<>();
             for (int i = 0; i < cardCount; i++) {
                 int cardNumber = in.nextInt();
@@ -39,6 +62,11 @@ class Player {
 
                 Card c = new Card(cardNumber, instanceId, location, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw);
                 cards.add(c);
+
+                if (debug) {
+                    System.err.println(cardNumber + " " + instanceId + " " + location + " " + cardType + " " + cost
+                            + " " + attack + " " + defense + " " + abilities  + " " + myHealthChange  + " " + opponentHealthChange + " " + cardDraw);
+                }
             }
 
             if (myGamer.mana == 0) {
@@ -71,6 +99,7 @@ class Player {
                 }
             }
             if(cardToSummon != null) {
+                cardsInHand.remove(cardToSummon);
                 cardsToSummon.add(new Action(Name.SUMMON, String.valueOf(cardToSummon.instanceId)));
                 myGamer.mana -= cardToSummon.cost;
             } else {
@@ -81,15 +110,14 @@ class Player {
     }
 
     private static List<Action> attackPlayer(List<Card> cardToAttack) {
-        List<Action> actions = cardToAttack.stream().
+        return  cardToAttack.stream().
                 map(card -> new Action(Name.ATTACK, String.valueOf(card.instanceId) + " -1")).
                 collect(Collectors.toList());
-        return  actions;
     }
 
     private static void printActions(List<Action> actions) {
         String actionsToPrint = actions.stream().
-                map(action -> action.toString()).
+                map(Action::toString).
                 collect(Collectors.joining(";"));
         if (actionsToPrint.isEmpty()) {
             System.out.println(Name.PASS);
@@ -117,7 +145,7 @@ class Action {
 enum Name {
     SUMMON,
     ATTACK,
-    PASS;
+    PASS
 }
 
 class Gamer {
